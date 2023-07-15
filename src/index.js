@@ -48,10 +48,47 @@ function checksTodoExists(request, response, next) {
   // pertence a um *todo* do usuário informado.
   // Com todas as validações passando, o *todo* encontrado deve ser passado para o `request` assim como 
   // o usuário encontrado também e a função next deve ser chamada.
+
+  const { username } = request.headers
+  const { id } = request.params
+
+
+  if (!validate(id)) {
+    return response.status(400).json({ error: 'Invalid UUID' })
+  }
+
+  const user = users.find(user => user.username === username)
+  if (!user) {
+    return response.status(404).json({ message: "User does not exist" })
+  }
+
+  const todo = user.todos.find(todo => todo.id === id)
+  if (!todo) {
+    return response.status(404).json({ message: "Todo does not exist" })
+  }
+
+  request.todo = todo
+
+  next()
+
+
 }
 
 function findUserById(request, response, next) {
-  // Complete aqui
+  // Esse middleware possui um funcionamento semelhante ao middleware checksExistsUserAccount
+  // mas a busca pelo usuário deve ser feita através do id de um usuário passado por parâmetro na rota.
+  // Caso o usuário tenha sido encontrado, o mesmo deve ser repassado para dentro do request.user
+  // e a função next deve ser chamada.
+  const { id } = request.params
+  const user = users.find(user => user.id === id)
+  if (!user) {
+    return response.status(404).json({ message: "User does not exist" })
+  }
+
+  request.user = user
+
+  next()
+
 }
 
 app.post('/users', (request, response) => {
